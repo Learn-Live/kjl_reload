@@ -6,14 +6,11 @@ utils/_pycache__/
 *.pdf
 *.png
 *.log
-*.dat
 
 /examples/tmp/*
 /examples/online/data/*
 /examples/online/out/*
 legacy
 
-#/examples/speedup/data/*
-#/examples/speedup/out/*
 
 
