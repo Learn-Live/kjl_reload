@@ -8,12 +8,12 @@ utils/_pycache__/
 *.log
 *.dat
 
-
+/examples/tmp/*
 /examples/online/data/*
 /examples/online/out/*
 legacy
 
-/examples/speedup/data/*
-/examples/speedup/out/*
+#/examples/speedup/data/*
+#/examples/speedup/out/*
 
 
