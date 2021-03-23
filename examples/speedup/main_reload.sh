@@ -13,7 +13,7 @@ PATH=$PATH:$PWD # add current directory to PATH
 ######################################################################################################################
 for dataset in UNB345_3 CTU1 MAWI1_2020 MACCDC1 SFRIG1_2020 AECHO1_2020 DWSHR_WSHR_2020; do
 	for model in "OCSVM(rbf)" "KJL-GMM(full)" "Nystrom-GMM(full)"  "KJL-QS-init_GMM(full)" "Nystrom-QS-init_GMM(full)"; do
-		cmd="PYTHONPATH=../:./ python3.7 -u speedup/main_reload_idv.py -d' ${dataset}' -m '${model}' > speedup/out/main_kjl_'${dataset}'_'${model}'.txt 2>&1"
+		cmd="PYTHONPATH=../:./ python3.7 -u speedup/main_reload_idv.py -d '${dataset}' -m '${model}' > speedup/out/main_kjl_'${dataset}'_'${model}'.txt 2>&1"
 #		PYTHONPATH=../:./ python3.7 -u speedup/main_reload_idv.py -d ${dataset} -m ${model}> speedup/out/main_kjl_${dataset}_${model}.txt 2>&1
 		echo $cmd
 		eval $cmd
