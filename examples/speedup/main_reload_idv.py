@@ -12,6 +12,7 @@ import time
 import traceback
 
 import numpy as np
+import pandas as pd
 from sklearn import metrics
 from sklearn.metrics import roc_curve
 
@@ -102,8 +103,8 @@ def _test(model, X_test, y_test, params, project):
     auc = metrics.auc(fpr, tpr)
 
     lg.debug(f'Total test time: {test_time} <= std_test_time: {std_test_time}, '
-            f'seek_test_time: {seek_test_time}, proj_test_time: {proj_test_time}, '
-            f'model_test_time: {model_test_time}')
+             f'seek_test_time: {seek_test_time}, proj_test_time: {proj_test_time}, '
+             f'model_test_time: {model_test_time}')
 
     return auc, test_time
 
@@ -131,7 +132,7 @@ def evaluate_model(model_params, project_params, X_test, y_test, nums=20, is_ave
 
     #######################################################################################################
     # 1. recreate project object from saved parameters
-    params = {'is_kjl': False, 'is_nystrom': False} # used for testing
+    params = {'is_kjl': False, 'is_nystrom': False}  # used for testing
     if 'KJL' in model_name:  # KJL-OCSVM
         project = KJL(None)
         project.sigma = project_params['sigma']
@@ -240,8 +241,43 @@ def get_test_set_space(test_set_file, unit='KB'):
     return format_unit(space, unit)
 
 
+def res2csv(dataset_name, model_name, res, out_file='.csv'):
+    """ data to csv
+
+    Parameters
+    ----------
+    dataset_name
+    model_name
+    res
+    out_file
+
+    Returns
+    -------
+
+    """
+    X_train_shape = res['X_train_shape']
+    X_val_shape = res['X_val_shape']
+    X_test_shape = res['X_test_shape']
+    params = res['params']
+
+    aucs = "-".join([str(v) for v in res['aucs']])
+    train_times = "-".join([str(v) for v in res['train_times']])
+    test_times = "-".join([str(v) for v in res['test_times']])
+    space_sizes = "-".join([str(v) for v in res['space_sizes']])
+    model_spaces = "-".join([str(v) for v in res['model_spaces']])
+    line = f' {dataset_name}|, {model_name}, X_train: {X_train_shape}|X_val: {X_val_shape}, X_test: {X_test_shape}, ' \
+           f'auc:, train:, test:, => aucs:{aucs}, ' \
+           f'train_times:{train_times}, test_times:{test_times}, n_comp: ,' \
+           f', space_sizes: {space_sizes}|model_spaces: {model_spaces},' \
+           f' tot_clusters: , ,' \
+           f' n_clusters: , , with params: {params}: '
+    pd.DataFrame(line.split(',')).to_csv(out_file + '.csv', sep=',', index=False, encoding='utf-8-sig')
+
+    return out_file
+
+
 def main(dataset_name="CTU1", model_name="OCSVM(rbf)", feat_set='iat_size', is_gs=True,
-         nums_average = 20, start_time=None):
+         nums_average=20, start_time=None):
     """ main function
 
     Parameters
@@ -270,14 +306,14 @@ def main(dataset_name="CTU1", model_name="OCSVM(rbf)", feat_set='iat_size', is_g
     else:
         GMM_covariance_type = 'full'
 
-    sub_dir = pth.join( 'src_dst',
-                      feat_set + "-header_False",
-                      dataset_name,
-                      "before_proj_False" + \
-                      f"-gs_{is_gs}",
-                      model_name + "-std_False"
-                      + "_center_False" + "-d_5" \
-                      + f"-{GMM_covariance_type}")
+    sub_dir = pth.join('src_dst',
+                       feat_set + "-header_False",
+                       dataset_name,
+                       "before_proj_False" + \
+                       f"-gs_{is_gs}",
+                       model_name + "-std_False"
+                       + "_center_False" + "-d_5" \
+                       + f"-{GMM_covariance_type}")
     in_dir = pth.join(in_dir, sub_dir)
     out_dir = pth.join(out_dir, sub_dir)
     lg.info(f'***{dataset_name}, {model_name}, {feat_set}, {in_dir}')
@@ -323,16 +359,19 @@ def main(dataset_name="CTU1", model_name="OCSVM(rbf)", feat_set='iat_size', is_g
             lg.error(f"Error: {dataset_name}, {model_name}")
 
     lg.debug(f'model_spaces: {np.mean(model_spaces):.2f}+/-{np.std(model_spaces):.2f} ({unit}), '
-            f'tot: {sum(model_spaces)} ({unit}), {model_spaces}')
+             f'tot: {sum(model_spaces)} ({unit}), {model_spaces}')
     lg.debug(f'auc: {np.mean(aucs):.2f}+/-{np.std(aucs):.2f}')
-    res = {'train_times': train_times, 'test_times': test_times, 'aucs': aucs,'params': params,
+    res = {'train_times': train_times, 'test_times': test_times, 'aucs': aucs, 'params': params,
            'space_sizes': space_sizes, 'model_spaces': model_spaces, 'test_spaces': test_spaces,
            'X_train_shape': X_train_shape, 'X_val_shape': X_val_shape, 'X_test_shape': X_test_shape}
 
     ##############################################################################################################
-    # 3. Save the result to the disk
+    # 3.1 Save the result to the disk
     out_file = f'{out_dir}/{dataset_name}-{model_name}.dat'
     dump_data(res, out_file)
+
+    # 3.2 save to csv
+    res2csv(dataset_name, model_name, res, out_file)
     # res = load_data(out_file)
     # lg.info(res)
     lg.info(out_file)
