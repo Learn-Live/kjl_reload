@@ -102,7 +102,7 @@ def _test(model, X_test, y_test, params, project):
     fpr, tpr, _ = roc_curve(y_test, y_score, pos_label=1)
     auc = metrics.auc(fpr, tpr)
 
-    lg.debug(f'Total test time: {test_time} <= std_test_time: {std_test_time}, '
+    lg.info(f'Total test time: {test_time} <= std_test_time: {std_test_time}, '
              f'seek_test_time: {seek_test_time}, proj_test_time: {proj_test_time}, '
              f'model_test_time: {model_test_time}')
 
@@ -334,6 +334,7 @@ def main(dataset_name="CTU1", model_name="OCSVM(rbf)", feat_set='iat_size', is_g
     ##############################################################################################################
     # 2. Recreate a new model from the saved parameters and evaluate it on the test set.
     for i in range(n_repeats):
+        lg.info(f'***{i}_th repeat')
         try:
             # 2.1 load the model and project parameters from file
             model_params_file = pth.join(in_dir, f'repeat_{i}.model.model_params')
